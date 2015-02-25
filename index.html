@@ -46,453 +46,385 @@
 				</section>
 
 				<section>
-					<h3>console</h3>
-					<pre><code data-trim style="min-height: 440px">
-console.log("%d bottles of beer on the wall", 99);
+					<h4>Примеры использования событий</h4>
+					<pre><code data-trim>
+// in browser
 
-console.info("Take %s down and pass it around", "one");
-console.warn("%d bottles of beer on the wall", 98);
-console.error("Take %s down and pass it around", "one");
+document.getElementById('id').addEventListener('click', function() {
+  ...
+}, false);
+					</code></pre>
 
-// dump stacktrace at line trace is called, with label
-console.trace(label) 
+					<pre><code data-trim>
+// in browser with jQuery
 
-// console.timeEnd(label): quick & dirty benchmarking
-console.time(label)
+$('#id').click(function (event) { ... });
+// or
+$('#id').on('click', function (event) { ... });
+					</code></pre>
 
-// assert that expression is true
-console.assert(expression, arguments) 
+					<pre><code data-trim>
+// with node EventEmitter
 
-// call util.inspect() on `object`, print results
-console.dir(object)
+var EventEmitter = require('events').EventEmitter;
+var emitter = new EventEmitter();
+emitter.on('someEvent', function () { ... });
 					</code></pre>
 				</section>
 
-				<section>
-					<h3>Основные типы данных в JavaScript</h3>
-					<ul>
-						<li>Numeric</li>
-						<li>String</li>
-						<li>Boolean</li>
-						<li>Object</li>
-						<li>Array</li>
-						<li>Function</li>
-					</ul>
-				</section>
+        <section>
+          <h4>Реализация EventEmitter</h4>
 
-				<section>
-					<h3>Числа</h3>
-					<ul>
-						<li>Нет отдельных типов для хранения числовых значений (ну кроме asm.js)</li>
-						<li>Number (64 бит)</li>
-            <li>Максимум ~ 10^15</li>
-						<li>Дробные числа (9.99 3.12e5)</li>
-					</ul>
-				</section>
+					<pre><code data-trim style="min-height: 430px">
+function EventEmitter() {
+  var events = {};
 
-				<section>
-          <h3>Что можно делать?</h3>
-          <p>
-            Да практически все!
-          </p>
+  this.on = function(name, fn) {
+    events[name] = events[name] || [];
+    events[name].push(fn);
+  }
 
-					<ul>
-						<li>40.0 + 2</li>
-						<li>0xFF - 0325</li>
-						<li>2.1e-4 * 2e5</li>
-						<li>142 % 0x66</li>
-					</ul>
-
-          <p>
-            Ну и кому интересно <a href="https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Operators/Bitwise_Operators">& | ^ ~ << >> >>></a>
-          </p>
-				</section>
-
-				<section>
-          <h3>Специальные числа</h3>
-					<pre><code data-trim>
-var x = 2 / 0;          // Infinity
-var y = -2 / 0;         // -Infinity
-
-var z = "apple" / 3     // NaN
-
-typeof x                // "number"
-typeof y                // "number"
-typeof z                // "number"
-
-isNaN(z)                // true
-isNaN(x + y)            // true
-
-					</code></pre>
-				</section>
-
-				<section>
-          <h3>Могут быть объектами</h3>
-					<pre><code data-trim>
-var x = new Number(42);     // WARNING: Do not try this at home
-
-x == 42                     // true
-x === 42                    // false
-
-typeof x                    // "object"
-typeof 42                   // "number"
-					</code></pre>
-				</section>
-
-				<section>
-          <h3>Свойства Numeric</h3>
-					<pre><code data-trim>
-Numeric.MAX_VALUE           // Максимально возможноe число
-Numeric.MIN_VALUE           // Минимально возможное число
-Numeric.NEGATIVE_INFINITY   // -Infinity
-Numeric.NaN                 // NaN
-Numeric.POSITIVE_INFINITY   // Infinity
-					</code></pre>
-        </section>
-
-				<section>
-          <h2>Приведение типов</h2>
-					<pre><code data-trim>
-parseInt(10 / 3)
-parseInt("10", 2)
-parseFloat("13")
-
-parseInt("2e5")             // 2
-parseInt("2asdfasfasf")     // 2
-
-var x = Number("199")
-typeof x                    // "number"
-
-(42).toString()             // "42"
-(255).toString(16)          // "ff"
+  this.trigger = function(name, args) {
+    events[name] = events[name] || [];
+    args = args || [];
+    events[name].forEach(function(fn) {
+      console.log(args)
+      fn.apply(this, args);
+    });
+  }
+}
 					</code></pre>
         </section>
 
         <section>
-          <h3>Строки</h3>
-					<pre><code data-trim>
-"Row, row, row your boat,"
-'Gently down the stream.'
-"If you see an alligator, \n"
-"Don\'t forget to scream.'
+          <h4>пример использования</h4>
 
-"Row," + "row," + "row" + "your" + "boat,"
-"Gently down the stream\u06D4"
-["Throw your teacher overboard",
-"And listen to his scream."].join('\n')
+					<pre><code data-trim>
+var emitter = new EventEmitter();
+
+emitter.on('ringBell', function(data) {
+  console.log('Who\'s there?');
+  console.log('I see you', data.visitor);
+});
+
+emitter.trigger('ringBell', [{ visitor: 'Neighbour' }]);
+emitter.trigger('ringBell', [{ visitor: 'Angry man' }]);
 					</code></pre>
         </section>
 
-				<section>
-					<h3>Методы работы со строками</h3>
-          <a href="http://www.w3schools.com/js/js_strings.asp">http://www.w3schools.com/js/js_strings.asp</a>
-          <a href="http://www.w3schools.com/js/js_string_methods.asp">http://www.w3schools.com/js/js_string_methods.asp</a>
-				</section>
+        <section>
+          <h4>Извлекаем пользу</h4>
 
-				<section>
-					<h3>Тип Boolean</h3>
+					<pre><code data-trim>
+function Store() {
+  var _items = [];
+  this.add = function(item) {
+    _items.push(item);
+    this.trigger('update', [item]);
+  }
+  this.getAll = function() { return _items; }
+}
+
+Store.prototype = new EventEmitter()
+// or extend(Store.prototype, new EventEmitter())
+					</code></pre>
+
+					<pre><code data-trim>
+var userStore = new Store();
+userStore.add({ name: 'Vasya Pupkin' });
+					</code></pre>
+
+					<pre><code data-trim>
+userStore.on('update', function(newUser) {
+  console.log(newUser);
+});
+					</code></pre>
+
+					<pre><code data-trim>
+userStore.on('update', sendToServer);
+					</code></pre>
+        </section>
+
+        <section>
+					<h4>PubSub</h4>
+					<pre><code data-trim style="min-height: 540px;">
+(function(global) {
+  var topics = {};
+
+  global.subscribe = function(name, fn) {
+    topics[name] = topics[name] || [];
+    topics[name].push(fn);
+  }
+
+  global.publish = function(name, args) {
+    topics[name] = topics[name] || [];
+    topics[name].forEach(function(fn) {
+      fn.apply(this, args);
+    });
+  }
+})(this);
+
+subscribe('download-started', function(totalKb) {
+  console.log('will download an extra', totalKb);
+});
+
+publish('download-started', [1024]);
+					</code></pre>
+        </section>
+
+        <section>
+					<h4>Еще способ</h4>
+					<pre><code data-trim style="min-height: 475px;">
+var PubSub = (function() {
+  var emitter = new EventEmitter();
+
+  return {
+    publish: function(name, args) {
+      emitter.trigger(name, args);
+    },
+
+    subscribe: function(name, fn) {
+      emitter.on(name, fn);
+    }
+  }
+})();
+
+PubSub.subscribe('download-started', function(totalKb) {
+  console.log('will download an extra', totalKb);
+});
+
+PubSub.publish('download-started', [1024]);
+					</code></pre>
+        </section>
+
+        <section>
+					<h4>И еще (если у вас есть jQuery)</h4>
+					<pre><code data-trim style="min-height: 490px;">
+(function($) {
+
+  var o = $({});
+
+  $.subscribe = function() {
+    o.on.apply(o, arguments);
+  };
+
+  $.publish = function() {
+    o.trigger.apply(o, arguments);
+  };
+
+}(jQuery));
+
+$.subscribe('download-started', function(totalKb) {
+  console.log('will download an extra', totalKb);
+});
+
+$.publish('download-started', [1024]);
+					</code></pre>
+        </section>
+
+        <section>
+          <h4>decoupling</h4>
+					<pre><code data-trim>
+orderInput.on('change', function() {
+  updateOrderCostField();
+  updateShippingCostField();
+  ...
+});
+
+function updateOrderCostField() {
+  orderConstEl.html(format(-getOrder().balanceAmount));
+}
+
+function updateShippingCostField() {
+  var order = getOrder();
+  shippingConstEl.html(format(order.quantity * order.shippingCost));
+}
+...
+					</code></pre>
+        </section>
+
+        <section>
+          <h4>decoupling</h4>
+					<pre><code data-trim>
+orderInput.on('change', function() {
+  $.publish('order.change', { order: getOrder() });
+});
+
+$.subscribe('order.change', function(data) {
+  orderConstEl.html(format(data.order.balanceAmount));
+});
+
+$.subscribe('order.change', function(data) {
+  var order = data.order;
+  shippingConstEl.html(format(order.quantity * order.shippingCost));
+});
+					</code></pre>
+        </section>
+
+        <section data-background='#fff'>
+          <h4>Promises</h4>
+          <img src="images/promises.png" alt="" height="550px" style="box-shadow: none; border: none;" />
+        </section>
+
+        <section>
+          <h4>Пример</h4>
+
+					<pre><code data-trim>
+$.get('users.json')
+
+.done(function(data) {
+  updateDom(data);
+})
+
+.fail(function() {
+  alert('there was a problem');
+});
+					</code></pre>
+        </section>
+
+        <section>
+          <h4>Что это такое?</h4>
           <ul>
-            <li>true</li>
-            <li>false</li>
+            <li>
+<strong>promise</strong> это величина, неизвестная на данный момент
+            </li>
+            <li>
+<strong>deferred</strong> это работа, незаконченная на данный момент
+            </li>
           </ul>
-				</section>
-
-        <section>
-          <h3>Операторы сравнения</h3>
-					<pre><code data-trim>
-3 > 2                          // true
-42 < 2                         // false
-
-155 >= 154                     // true
-0 <= 0                         // true
-100 != 101                     // true
-
-true == true                   // true
-true == false                  // false
-
-!true                          // false
-					</code></pre>
         </section>
 
         <section>
-          <h3>Сравнение строк</h3>
-					<pre><code data-trim>
-"JavaScript" == "JavaScript"   // true
-"Java" > "java"                // false
-"J" < "j"                      // true
-"Java" < "JavaScript"          // true
-					</code></pre>
+          <h4>Состояния promise</h4>
+          <ul>
+            <li>pending: initial state, not fulfilled or rejected.</li>
+            <li>fulfilled: successful operation</li>
+            <li>rejected: failed operation</li>
+            <li>settled: the Promise is either fulfilled or rejected, but not pending</li>
+          </ul>
         </section>
 
         <section>
-          <h3>Сравнение с NaN</h3>
-					<pre><code data-trim>
-NaN == NaN                     // false
-
-isNaN(NaN)                     // true
-isNaN(10)                      // false
-
-isNaN('10')                    // false
-isNaN('10ssdf')                // true
-					</code></pre>
-        </section>
-
-        <section>
-          <h3>Автоматическое преобразование типов</h3>
-					<pre><code data-trim>
-8 * null                       // undefined
-"5" - 1                        // 4
-"5" + 1                        // 51
-"пять" * 2                     // NaN
-					</code></pre>
-        </section>
-
-        <section>
-          <h3>Сравнение без приведения типов</h3>
-					<pre><code data-trim>
-'10' == 10                      // true
-'10' === 10                     // false
-
-'10' != 10                      // false
-'10' !== 10                     // true
-
-(new Number(42)) == 42          // true
-(new Number(42)) === 42         // false
-
-false == 0                       // true
-false == []                      // true
-false == ''                      // true
-
-true == 1                        // true
-true == [1, 2]                   // true
-true == 'hey'                    // false
-					</code></pre>
-        </section>
-
-        <section>
-          <h3>Логические операторы && и ||</h3>
-					<pre><code data-trim>
-var role = null || "user"        // role = "user"
-var role = "admin" || "user"     // role = "admin"
-
-var result = undefined &&  10    // result = undefined
-var result = 100 &&  10          // result = 100
-					</code></pre>
-        </section>
-
-        <section>
-          <h3>Неопределенные значения</h3>
-          <p>null и undefined</p>
-
-					<pre><code data-trim>
-var p;
-p === undefined                  // true
-
-var a = [1, 2, 3]
-a[10]                            // undefined
-
-typeof undefined                 // "undefined"
-typeof null                      // "object"
-					</code></pre>
-        </section>
-
-        <section>
-          <h2>Управляющие конструкции языка</h2>
-        </section>
-
-        <section>
-          <h3>Инструкции</h3>
-					<pre><code data-trim>
-100;
-true; var b = 10;
-var a = 13;
-alert(a);
-function sum(a, b) { return a + b; }
-					</code></pre>
-        </section>
-
-        <section>
-          <h3>Переменные. Ключевое слово var</h3>
-					<pre><code data-trim>
-var ten = 10;
-
-var eleven;
-eleven = 11;
-
-var nine = ten - 1;
-nine = 8;
-					</code></pre>
-        </section>
-
-        <section>
-          <h3>Именование переменных</h3>
-					<pre><code data-trim>
-var one = 1, two = 2;
-var ten = 10;
-var _this = this;
-var $form = $('#user_form');
-
-var UserModel = function() {};
-
-var new-user = {};                 // error
-var 0mission;                      // error
-var if = true;                     // error
-var var = "var";                   // error
-					</code></pre>
-        </section>
-
-        <section>
-          <h3>Ключевые и зарезервированные слова</h3>
-          <p>
-break case catch continue debugger default delete do else false finally for function if implements in instanceof interface let new null package private protected public return static switch throw true try typeof var void while with yield this
-          </p>
-        </section>
-
-        <section>
-          <h3>Функции</h3>
-
-					<pre><code data-trim>
-var square = function(a) { return a * a; }
-var log = function(text) { console.log(text); }
-
-typeof square                       // "function"
-typeof Math.max                     // "function"
-					</code></pre>
-        </section>
-
-        <section>
-          <h3>Оператор if</h3>
-					<pre><code data-trim>
-var age = getUserAge('alex');
-					</code></pre>
-
-					<pre><code data-trim>
-if (age > 18) sellBeer('alex');
-					</code></pre>
-
-					<pre><code data-trim>
-if (age > 18 && age < 80) {
-  sellBeer('alex');
-}
-					</code></pre>
-
-					<pre><code data-trim>
-if (age < 18) {
-  alert('You are to young for this boy');
-} else if (age > 90) {
-  alert('Better find nearest hospital grandpa');
-} else {
-  alert('Gimme a break. Get outta here!')
+          <h4>Пример реализации</h4>
+					<pre><code data-trim style="min-height: 545px;">
+function Deferred() {
+  var resolvedCallbacks = [],
+      rejectedCallbacks = [];
+  this.resolve = function(args) {
+    resolvedCallbacks.forEach(function(fn) {
+      fn.apply(this, args);
+    });
+  };
+  this.reject = function(args) {
+    rejectedCallbacks.forEach(function(fn) {
+      fn.apply(this, args);
+    });
+  };
+  this.promise = {
+    done: function(fn) {
+      resolvedCallbacks.push(fn);
+    },
+    fail: function(fn) {
+      rejectedCallbacks.push(fn);
+    }
+  }
 }
 					</code></pre>
         </section>
 
         <section>
-          <h3>Оператор switch</h3>
-
-					<pre><code data-trim>
-if (variable == "value1") action1();
-else if (variable == "value2") action2();
-else if (variable == "value3") action3();
-else defaultAction();
-					</code></pre>
-
-					<pre><code data-trim>
-switch getWeather() {
-  case "rain":
-    console.log("Too wet");
-    break;
-  case "snow":
-    console.log("Too cold");
-    break;
-  case "sunny":
-    console.log("Oh my God my eyes!!! I'm blind");
-  case "clouds":
-    console.log("See this clouds? It's gonna rain. I'm sure");
-    break;
-  default:
-    console.log("Probably will stay in bed");
-    break;
+          <h4>Пример использования</h4>
+					<pre><code data-trim style="min-height: 460px;">
+function makeAjaxRequest(url) {
+  var deferred = new Deferred();
+  $.get(url, {
+    success: function(data) {
+      deferred.resolve(data);
+    },
+    error: function(xhr, error) {
+      deferred.reject(error);
+    }
+  });
+  return deferred.promise;
 }
+
+var promise = makeAjaxRequest('foo.json');
+promise.done(function(data) { insertDom(data) })
+promise.fail(function(error) { insertFailureMessage(error) })
+promise.done(function() { console.log('it succeeded!'); }
+promise.fail(function() { console.log('it failed'); }
 					</code></pre>
         </section>
 
         <section>
-          <h3>Оператор for</h3>
-
+          <h4>Обработка ошибок</h4>
 					<pre><code data-trim>
-for (var n = 0; n <= 10; n = n + 1) {
-  console.log(n);
-}
+var someAsyncThing = function() {
+  return new Promise(function(resolve, reject) {
+    // this will throw, x does not exist
+    resolve(x + 2);
+  });
+};
 
-for (var n = 0; n <= 10; n++) {
-  console.log(n);
-}
+var promise = someAsyncThing();
 
-for (var n = 0; ; n++) {
-  if(n > 10) break;
-  console.log(n);
-}
-					</code></pre>
+promise.then(function() {
+  console.log('everything is great');
+});
 
-					<pre><code data-trim>
-var sum = 0;
-
-for (var n = 1; n <= 10; n++) {
-  if(n % 2 == 0) continue;
-  sum += n;
-}
-
-console.log(sum);                             // 25
-					</code></pre>
-
-        </section>
-
-        <section>
-          <h3>Оператор while</h3>
-					<pre><code data-trim>
-while (true) {
-  console.log("Woohoooo!!!");
-}
-					</code></pre>
-
-					<pre><code data-trim>
-var n = 0;
-while (n <= 10) {
-  console.log(number);
-  n++;
-}
+promise.catch(function(e) {
+  console.error(e);
+});                           // [ReferenceError: x is not defined]
 					</code></pre>
         </section>
 
         <section>
-          <h3>Оператор do</h3>
-					<pre><code data-trim>
-do {
-  var name = prompt("Who are you?");
-} while (!name);
+          <h4>Пример</h4>
+					<pre><code data-trim  style="min-height: 600px;">
+var fetchData = function() {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      resolve({
+        users: [
+          { name: 'Jack', age: 22 },
+          { name: 'Tom', age: 21 },
+          { name: 'Isaac', age: 21 },
+          { name: 'Iain', age: 20 }
+        ]
+      });
+    }, 50);
+  });
+}
 
-console.log(name);
+var prepareDataForCsv = function(data) {
+  return new Promise(function(resolve, reject) {
+    // imagine this did something with the data
+    resolve(data);
+  });
+};
+
+var writeToCsv = function(data) {
+  return new Promise(function(resolve, reject) {
+    // write to CSV
+    resolve();
+  });
+};
+
+prepareDataForCsv(fetchData).then(writeToCsv).then(function() {
+  console.log('your csv has been saved');
+}).catch(function(error) {
+  console.log('something went wrong', error);
+});
 					</code></pre>
         </section>
 
         <section>
-          <h3>Тернарный оператор ? :</h3>
-					<pre><code data-trim>
-var result = count > 10 ? "finished" : getResult(count);
-					</code></pre>
-        </section>
-
-        <section>
-        <h3>Ссылки</h3>
-          <a href="http://www.w3schools.com/js/js_numbers.asp">http://www.w3schools.com/js/js_numbers.asp</a>
-          <a href="http://www.w3schools.com/js/js_number_methods.asp">http://www.w3schools.com/js/js_number_methods.asp</a>
-          <a href="http://www.w3schools.com/js/js_strings.asp">http://www.w3schools.com/js/js_strings.asp</a>
-          <a href="http://www.w3schools.com/js/js_string_methods.asp">http://www.w3schools.com/js/js_string_methods.asp</a>
-          <a href="http://eloquentjavascript.net/01_values.html">http://eloquentjavascript.net/01_values.html</a>
-          <a href="http://eloquentjavascript.net/02_program_structure.html">http://eloquentjavascript.net/02_program_structure.html</a>
-          <a href="https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Operators/Bitwise_Operators">Bitwise operators</a>
-          <a href="http://kripken.github.io/mloc_emscripten_talk/">http://kripken.github.io/mloc_emscripten_talk/</a>
+          <h3>Ссылки</h3>
+          <a href="http://blog.mediumequalsmessage.com/promise-deferred-objects-in-javascript-pt1-theory-and-semantics">Promise & Deferred objects in JavaScript Pt.1: Theory and Semantics.</a>
+          <a href="http://blog.mediumequalsmessage.com/promise-deferred-objects-in-javascript-pt2-practical-use">Promise & Deferred Objects in JavaScript Pt.2: in Practice</a>
+          <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise">https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise</a>
+          <a href="http://api.jquery.com/category/deferred-object/">http://api.jquery.com/category/deferred-object/</a>
+          <a href="http://otaqui.com/blog/1374/event-emitter-pub-sub-or-deferred-promises-which-should-you-choose/">Event Emitter, Pub Sub or Deferred Promises … which should you choose?</a>
         </section>
 			</div>
 
